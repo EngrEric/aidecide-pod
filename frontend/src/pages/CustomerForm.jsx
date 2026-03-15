@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight, Package, Loader2 } from "lucide-react";
-import api from "@/lib/api";
+import { firebaseApi } from "@/lib/firebaseApi";
 import { QUESTION_OPTIONS } from "@/utils/scoring";
 
 const STEPS = [
@@ -77,7 +77,7 @@ export default function CustomerForm() {
     
     setIsSubmitting(true);
     try {
-      await api.createSubmission(formData);
+      await firebaseApi.createSubmission(formData);
       setIsSubmitted(true);
       toast.success("Application submitted successfully!");
     } catch (error) {

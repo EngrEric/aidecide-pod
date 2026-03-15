@@ -7,14 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Package, Loader2, Lock } from "lucide-react";
 import { useAuth } from "@/App";
-import api from "@/lib/api";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+
+  // Redirect if already logged in
+  if (user) {
+    navigate("/admin/dashboard");
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +30,22 @@ export default function AdminLogin() {
     
     setIsLoading(true);
     try {
-      const response = await api.adminLogin(email, password);
-      if (response.success) {
-        login(response.token);
-        toast.success("Welcome back!");
-        navigate("/admin/dashboard");
-      }
+      await login(email, password);
+      toast.success("Welcome back!");
+      navigate("/admin/dashboard");
     } catch (error) {
-      toast.error("Invalid credentials. Please try again.");
+      // Firebase auth error handling
+      let errorMessage = "Invalid credentials. Please try again.";
+      if (error.code === "auth/user-not-found") {
+        errorMessage = "No account found with this email.";
+      } else if (error.code === "auth/wrong-password") {
+        errorMessage = "Incorrect password.";
+      } else if (error.code === "auth/invalid-email") {
+        errorMessage = "Invalid email format.";
+      } else if (error.code === "auth/too-many-requests") {
+        errorMessage = "Too many attempts. Please try again later.";
+      }
+      toast.error(errorMessage);
       console.error(error);
     } finally {
       setIsLoading(false);

@@ -4,7 +4,8 @@ import { Toaster } from "@/components/ui/sonner";
 import CustomerForm from "@/pages/CustomerForm";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
-import { useState, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
+import { firebaseApi } from "@/lib/firebaseApi";
 
 // Auth Context
 const AuthContext = createContext(null);
@@ -19,9 +20,17 @@ export const useAuth = () => {
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { user, loading } = useAuth();
   
-  if (!isAuthenticated) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" />
+      </div>
+    );
+  }
+  
+  if (!user) {
     return <Navigate to="/admin/login" replace />;
   }
   
@@ -29,22 +38,30 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("admin_token") !== null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Listen for Firebase auth state changes
+    const unsubscribe = firebaseApi.onAuthStateChanged((firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
   
-  const login = (token) => {
-    localStorage.setItem("admin_token", token);
-    setIsAuthenticated(true);
+  const login = async (email, password) => {
+    const result = await firebaseApi.adminLogin(email, password);
+    return result;
   };
   
-  const logout = () => {
-    localStorage.removeItem("admin_token");
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await firebaseApi.adminLogout();
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<CustomerForm />} />

@@ -32,8 +32,8 @@ import {
   RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/App";
-import api from "@/lib/api";
-import { STATUS_CONFIG, FLAG_CONFIG, getStatusLabel, getStatusColor, getFlagLabel, getFlagColor, SCORING_CONFIG } from "@/utils/scoring";
+import { firebaseApi } from "@/lib/firebaseApi";
+import { STATUS_CONFIG, FLAG_CONFIG, getStatusLabel, getStatusColor, getFlagLabel, getFlagColor } from "@/utils/scoring";
 
 const FILTER_OPTIONS = [
   { value: "all", label: "All Submissions" },
@@ -57,12 +57,12 @@ export default function AdminDashboard() {
     setIsLoading(true);
     try {
       const [statsData, submissionsData] = await Promise.all([
-        api.getDashboardStats(),
+        firebaseApi.getDashboardStats(),
         filter === "flagged"
-          ? api.getSubmissions(null, true)
+          ? firebaseApi.getSubmissions(null, true)
           : filter === "all"
-          ? api.getSubmissions()
-          : api.getSubmissions(filter)
+          ? firebaseApi.getSubmissions()
+          : firebaseApi.getSubmissions(filter)
       ]);
       setStats(statsData);
       setSubmissions(submissionsData);
@@ -78,8 +78,8 @@ export default function AdminDashboard() {
     fetchData();
   }, [filter]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/admin/login");
   };
 
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
     if (!window.confirm("Are you sure you want to delete this submission?")) return;
     
     try {
-      await api.deleteSubmission(id);
+      await firebaseApi.deleteSubmission(id);
       toast.success("Submission deleted");
       fetchData();
     } catch (error) {

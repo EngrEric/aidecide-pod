@@ -75,6 +75,13 @@ export const THRESHOLDS = {
 };
 
 // =============================================================================
+// ADDRESS VALIDATION SETTINGS
+// =============================================================================
+
+const MIN_ADDRESS_LENGTH = 15;
+const MIN_LANDMARK_LENGTH = 5;
+
+// =============================================================================
 // STATUS LABELS AND COLORS
 // =============================================================================
 
@@ -164,6 +171,107 @@ export const QUESTION_OPTIONS = {
     "POD with small commitment fee",
     "I prefer paying fully before delivery"
   ]
+};
+
+// =============================================================================
+// SCORING CALCULATION FUNCTION
+// =============================================================================
+
+export const calculateScore = (submission) => {
+  let score = 0;
+  const breakdown = {};
+  const flags = [];
+
+  // Calculate scores for each category
+  if (submission.buying_for) {
+    const points = SCORING_CONFIG.buying_for[submission.buying_for] || 0;
+    score += points;
+    breakdown.buying_for = { answer: submission.buying_for, points };
+  }
+
+  if (submission.shopping_frequency) {
+    const points = SCORING_CONFIG.shopping_frequency[submission.shopping_frequency] || 0;
+    score += points;
+    breakdown.shopping_frequency = { answer: submission.shopping_frequency, points };
+  }
+
+  if (submission.bought_shoes_online) {
+    const points = SCORING_CONFIG.bought_shoes_online[submission.bought_shoes_online] || 0;
+    score += points;
+    breakdown.bought_shoes_online = { answer: submission.bought_shoes_online, points };
+  }
+
+  if (submission.buying_behavior) {
+    const points = SCORING_CONFIG.buying_behavior[submission.buying_behavior] || 0;
+    score += points;
+    breakdown.buying_behavior = { answer: submission.buying_behavior, points };
+    // Flag: High risk if prefers testing
+    if (submission.buying_behavior === "I prefer testing and deciding before paying") {
+      flags.push("high_risk");
+    }
+  }
+
+  if (submission.payment_readiness) {
+    const points = SCORING_CONFIG.payment_readiness[submission.payment_readiness] || 0;
+    score += points;
+    breakdown.payment_readiness = { answer: submission.payment_readiness, points };
+    // Flag: Payment risk
+    if (submission.payment_readiness === "I may need time to arrange payment") {
+      flags.push("payment_risk");
+    }
+  }
+
+  if (submission.delivery_availability) {
+    const points = SCORING_CONFIG.delivery_availability[submission.delivery_availability] || 0;
+    score += points;
+    breakdown.delivery_availability = { answer: submission.delivery_availability, points };
+  }
+
+  if (submission.commitment_preference) {
+    const points = SCORING_CONFIG.commitment_preference[submission.commitment_preference] || 0;
+    score += points;
+    breakdown.commitment_preference = { answer: submission.commitment_preference, points };
+  }
+
+  // Confirmation bonus
+  if (submission.confirmation) {
+    score += SCORING_CONFIG.confirmation_bonus;
+    breakdown.confirmation = { answer: "Yes", points: SCORING_CONFIG.confirmation_bonus };
+  }
+
+  // Address validation flags
+  const address = submission.address || "";
+  const landmark = submission.landmark || "";
+
+  if (address.length < MIN_ADDRESS_LENGTH) {
+    flags.push("incomplete_address");
+  }
+
+  if (landmark.length < MIN_LANDMARK_LENGTH) {
+    flags.push("incomplete_landmark");
+  }
+
+  // Contact validation flag
+  if (!submission.alternative_phone) {
+    flags.push("weak_contact");
+  }
+
+  // Determine status based on score
+  let status;
+  if (score >= THRESHOLDS.approved) {
+    status = "approved";
+  } else if (score >= THRESHOLDS.deposit) {
+    status = "deposit_required";
+  } else {
+    status = "not_qualified";
+  }
+
+  return {
+    score,
+    status,
+    flags,
+    breakdown
+  };
 };
 
 // =============================================================================
