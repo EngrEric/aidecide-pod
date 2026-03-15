@@ -81,27 +81,12 @@ export const firebaseApi = {
 
   // Get all submissions with optional filters
   getSubmissions: async (status = null, flagged = null) => {
-    let q;
-    
-    if (status) {
-      q = query(
-        collection(db, SUBMISSIONS_COLLECTION),
-        where('status', '==', status),
-        orderBy('created_at', 'desc')
-      );
-    } else if (flagged) {
-      // For flagged, we need to get all and filter client-side
-      // since Firestore doesn't support array-contains with not-empty
-      q = query(
-        collection(db, SUBMISSIONS_COLLECTION),
-        orderBy('created_at', 'desc')
-      );
-    } else {
-      q = query(
-        collection(db, SUBMISSIONS_COLLECTION),
-        orderBy('created_at', 'desc')
-      );
-    }
+    // Fetch all submissions and filter client-side
+    // This avoids Firestore composite index requirements
+    const q = query(
+      collection(db, SUBMISSIONS_COLLECTION),
+      orderBy('created_at', 'desc')
+    );
 
     const querySnapshot = await getDocs(q);
     let submissions = querySnapshot.docs.map(doc => ({
@@ -110,7 +95,11 @@ export const firebaseApi = {
       created_at: doc.data().created_at?.toDate() || new Date()
     }));
 
-    // Filter for flagged submissions client-side
+    // Apply filters client-side
+    if (status) {
+      submissions = submissions.filter(sub => sub.status === status);
+    }
+    
     if (flagged) {
       submissions = submissions.filter(sub => sub.flags && sub.flags.length > 0);
     }
