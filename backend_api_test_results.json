@@ -1,0 +1,150 @@
+{
+  "summary": {
+    "tests_run": 20,
+    "tests_passed": 20,
+    "success_rate": 100.0,
+    "timestamp": "2026-03-15T18:19:56.344720"
+  },
+  "detailed_results": [
+    {
+      "test_name": "API Root",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:54.553039"
+    },
+    {
+      "test_name": "Admin Login (Invalid)",
+      "success": true,
+      "details": "Expected 401, got 401",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:54.684678"
+    },
+    {
+      "test_name": "Admin Login (Valid)",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:54.807120"
+    },
+    {
+      "test_name": "Token Retrieved",
+      "success": true,
+      "details": "Token: admin_978bef3b-7c74-...",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:54.807725"
+    },
+    {
+      "test_name": "Create Submission",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:54.936953"
+    },
+    {
+      "test_name": "Scoring Algorithm (High Score)",
+      "success": true,
+      "details": "Score: 125, Status: approved",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:54.937589"
+    },
+    {
+      "test_name": "Create Low Score Submission",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.092403"
+    },
+    {
+      "test_name": "Scoring Algorithm (Low Score)",
+      "success": true,
+      "details": "Score: -45, Status: not_qualified",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.093010"
+    },
+    {
+      "test_name": "Risk Flags Detection",
+      "success": true,
+      "details": "Found flags: ['high_risk', 'payment_risk', 'incomplete_address', 'incomplete_landmark', 'weak_contact']",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.093040"
+    },
+    {
+      "test_name": "Get All Submissions",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.231035"
+    },
+    {
+      "test_name": "Get Approved Submissions",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.371306"
+    },
+    {
+      "test_name": "Get Flagged Submissions",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.527641"
+    },
+    {
+      "test_name": "Get Single Submission (5055b73a)",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.659700"
+    },
+    {
+      "test_name": "Get Single Submission (b847b909)",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.798026"
+    },
+    {
+      "test_name": "Dashboard Stats",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.945331"
+    },
+    {
+      "test_name": "Dashboard Stats Structure",
+      "success": true,
+      "details": "All fields present: ['total', 'approved', 'deposit_required', 'not_qualified', 'high_risk']",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.945933"
+    },
+    {
+      "test_name": "Dashboard Stats Logic",
+      "success": true,
+      "details": "Total: 7, Sum: 7",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:55.945950"
+    },
+    {
+      "test_name": "Non-existent Submission",
+      "success": true,
+      "details": "Expected 404, got 404",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:56.082925"
+    },
+    {
+      "test_name": "Delete Submission (5055b73a)",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:56.204727"
+    },
+    {
+      "test_name": "Delete Submission (b847b909)",
+      "success": true,
+      "details": "Expected 200, got 200",
+      "response_data": null,
+      "timestamp": "2026-03-15T18:19:56.343860"
+    }
+  ]
+}
