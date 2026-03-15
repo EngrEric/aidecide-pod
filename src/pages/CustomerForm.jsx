@@ -1,32 +1,74 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Check, ChevronLeft, ChevronRight, Package, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Package, Loader2, ChevronsUpDown } from "lucide-react";
 import { firebaseApi } from "@/lib/firebaseApi";
 import { QUESTION_OPTIONS } from "@/utils/scoring";
 
 const STEPS = [
   { id: 1, title: "Personal Info", fields: ["full_name", "active_phone", "alternative_phone"] },
-  { id: 2, title: "Delivery Address", fields: ["address", "landmark"] },
-  { id: 3, title: "Order Details", fields: ["shoe_model", "shoe_size", "shoe_color"] },
+  { id: 2, title: "Delivery Address", fields: ["state", "address", "landmark"] },
+  { id: 3, title: "Order Details", fields: ["shoe_size"] },
   { id: 4, title: "Shopping Profile", fields: ["buying_for", "shopping_frequency", "bought_shoes_online"] },
   { id: 5, title: "Payment Preferences", fields: ["buying_behavior", "payment_readiness", "delivery_availability", "commitment_preference", "confirmation"] }
+];
+
+const NIGERIAN_STATES = [
+  "Abia",
+  "Adamawa",
+  "Akwa Ibom",
+  "Anambra",
+  "Bauchi",
+  "Bayelsa",
+  "Benue",
+  "Borno",
+  "Cross River",
+  "Delta",
+  "Ebonyi",
+  "Edo",
+  "Ekiti",
+  "Enugu",
+  "Gombe",
+  "Imo",
+  "Jigawa",
+  "Kaduna",
+  "Kano",
+  "Katsina",
+  "Kebbi",
+  "Kogi",
+  "Kwara",
+  "Lagos",
+  "Nasarawa",
+  "Niger",
+  "Ogun",
+  "Ondo",
+  "Osun",
+  "Oyo",
+  "Plateau",
+  "Rivers",
+  "Sokoto",
+  "Taraba",
+  "Yobe",
+  "Zamfara"
 ];
 
 const initialFormData = {
   full_name: "",
   active_phone: "",
   alternative_phone: "",
+  state: "",
   address: "",
   landmark: "",
-  shoe_model: "",
   shoe_size: "",
-  shoe_color: "",
   buying_for: "",
   shopping_frequency: "",
   bought_shoes_online: "",
@@ -37,26 +79,82 @@ const initialFormData = {
   confirmation: false
 };
 
+const REQUIRED_FIELD_ERRORS = {
+  full_name: "Full name is required.",
+  active_phone: "Active phone number is required.",
+  state: "Please select your state.",
+  address: "Delivery address is required.",
+  landmark: "Nearest landmark is required.",
+  shoe_size: "Shoe size is required.",
+  buying_for: "Please select who you are buying for.",
+  shopping_frequency: "Please select how often you shop online.",
+  bought_shoes_online: "Please select if you have bought shoes online before.",
+  buying_behavior: "Please select the buying behavior that suits you.",
+  payment_readiness: "Please select your payment readiness.",
+  delivery_availability: "Please select your delivery availability.",
+  commitment_preference: "Please select your commitment fee preference.",
+  confirmation: "Please confirm your commitment to proceed."
+};
+
+const neutralInputClass = "mt-1.5 h-12 rounded-lg border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 shadow-none focus-visible:ring-2 focus-visible:ring-zinc-200";
+const neutralTextAreaClass = "mt-1.5 min-h-[100px] rounded-lg border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-none focus-visible:ring-2 focus-visible:ring-zinc-200";
+const neutralStateComboboxTriggerClass = "mt-1.5 flex h-12 w-full items-center justify-between rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 shadow-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-200";
+const questionLabelClass = "text-zinc-800 font-semibold";
+const questionPromptClass = "text-zinc-800 font-semibold mb-3 block";
+
+function FieldError({ message }) {
+  if (!message) return null;
+
+  return <p className="mt-1.5 text-xs font-medium text-red-600">{message}</p>;
+}
+
 export default function CustomerForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    setErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const validateStep = () => {
     const step = STEPS[currentStep - 1];
+    const stepErrors = {};
+
     for (const field of step.fields) {
-      if (field === "alternative_phone" || field === "confirmation") continue;
-      if (!formData[field]) {
-        toast.error("Please fill in all required fields");
-        return false;
+      if (field === "alternative_phone") continue;
+
+      const value = formData[field];
+      const isEmpty = field === "confirmation"
+        ? !Boolean(value)
+        : typeof value === "string"
+        ? value.trim() === ""
+        : !value;
+
+      if (isEmpty) {
+        stepErrors[field] = REQUIRED_FIELD_ERRORS[field] || "This field is required.";
       }
     }
-    return true;
+
+    setErrors((prev) => {
+      const next = { ...prev };
+      step.fields.forEach((field) => {
+        delete next[field];
+      });
+
+      return { ...next, ...stepErrors };
+    });
+
+    return Object.keys(stepErrors).length === 0;
   };
 
   const nextStep = () => {
@@ -70,8 +168,7 @@ export default function CustomerForm() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.confirmation) {
-      toast.error("Please confirm the commitment to proceed");
+    if (!validateStep()) {
       return;
     }
     
@@ -106,6 +203,7 @@ export default function CustomerForm() {
               onClick={() => {
                 setIsSubmitted(false);
                 setFormData(initialFormData);
+                setErrors({});
                 setCurrentStep(1);
               }}
               variant="outline"
@@ -121,9 +219,17 @@ export default function CustomerForm() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-zinc-100 via-stone-50 to-amber-100/70">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -left-20 -top-24 h-72 w-72 rounded-full bg-white/80 blur-3xl" />
+        <div className="absolute -right-24 top-24 h-96 w-96 rounded-full bg-amber-100/70 blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 h-64 w-[32rem] -translate-x-1/2 rounded-full bg-slate-200/50 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(24,24,27,0.08)_1px,transparent_0)] [background-size:20px_20px] opacity-20" />
+      </div>
+
+      <div className="relative">
       {/* Header */}
-      <header className="bg-white border-b border-zinc-200 sticky top-0 z-40">
+      <header className="bg-white/85 border-b border-zinc-200/70 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center">
@@ -170,23 +276,23 @@ export default function CustomerForm() {
 
       {/* Form */}
       <div className="max-w-2xl mx-auto px-4 py-8">
-        <Card className="shadow-xl shadow-zinc-200/50 border-zinc-100 overflow-hidden">
+        <Card className="bg-white/90 border-white/70 shadow-[0_24px_60px_-35px_rgba(24,24,27,0.6)] backdrop-blur-md overflow-hidden">
           <CardContent className="p-6 sm:p-8">
             <div className="animate-fadeIn">
               {currentStep === 1 && (
-                <StepPersonalInfo formData={formData} updateField={updateField} />
+                <StepPersonalInfo formData={formData} updateField={updateField} errors={errors} />
               )}
               {currentStep === 2 && (
-                <StepDeliveryAddress formData={formData} updateField={updateField} />
+                <StepDeliveryAddress formData={formData} updateField={updateField} errors={errors} />
               )}
               {currentStep === 3 && (
-                <StepOrderDetails formData={formData} updateField={updateField} />
+                <StepOrderDetails formData={formData} updateField={updateField} errors={errors} />
               )}
               {currentStep === 4 && (
-                <StepShoppingProfile formData={formData} updateField={updateField} />
+                <StepShoppingProfile formData={formData} updateField={updateField} errors={errors} />
               )}
               {currentStep === 5 && (
-                <StepPaymentPreferences formData={formData} updateField={updateField} />
+                <StepPaymentPreferences formData={formData} updateField={updateField} errors={errors} />
               )}
             </div>
 
@@ -229,12 +335,13 @@ export default function CustomerForm() {
           </CardContent>
         </Card>
       </div>
+      </div>
     </div>
   );
 }
 
 // Step Components
-function StepPersonalInfo({ formData, updateField }) {
+function StepPersonalInfo({ formData, updateField, errors }) {
   return (
     <div className="space-y-6">
       <div>
@@ -244,9 +351,9 @@ function StepPersonalInfo({ formData, updateField }) {
         <p className="text-sm text-zinc-500">Let us know how to reach you</p>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-4 form-question-stack">
         <div>
-          <Label htmlFor="full_name" className="text-zinc-700">Full Name *</Label>
+          <Label htmlFor="full_name" className={questionLabelClass}>Full Name *</Label>
           <Input
             id="full_name"
             name="full_name"
@@ -254,13 +361,14 @@ function StepPersonalInfo({ formData, updateField }) {
             value={formData.full_name}
             onChange={(e) => updateField("full_name", e.target.value)}
             placeholder="Enter your full name"
-            className="mt-1.5 h-12"
+            className={`${neutralInputClass} ${errors.full_name ? "border-red-400 focus-visible:ring-red-100" : ""}`}
             data-testid="full-name-input"
           />
+          <FieldError message={errors.full_name} />
         </div>
         
         <div>
-          <Label htmlFor="active_phone" className="text-zinc-700">Active Phone Number *</Label>
+          <Label htmlFor="active_phone" className={questionLabelClass}>Active Phone Number *</Label>
           <Input
             id="active_phone"
             name="active_phone"
@@ -268,13 +376,14 @@ function StepPersonalInfo({ formData, updateField }) {
             value={formData.active_phone}
             onChange={(e) => updateField("active_phone", e.target.value)}
             placeholder="+234 800 000 0000"
-            className="mt-1.5 h-12"
+            className={`${neutralInputClass} ${errors.active_phone ? "border-red-400 focus-visible:ring-red-100" : ""}`}
             data-testid="active-phone-input"
           />
+          <FieldError message={errors.active_phone} />
         </div>
         
         <div>
-          <Label htmlFor="alternative_phone" className="text-zinc-700">Alternative Phone Number</Label>
+          <Label htmlFor="alternative_phone" className={questionLabelClass}>Alternative Phone Number</Label>
           <Input
             id="alternative_phone"
             name="alternative_phone"
@@ -282,7 +391,7 @@ function StepPersonalInfo({ formData, updateField }) {
             value={formData.alternative_phone}
             onChange={(e) => updateField("alternative_phone", e.target.value)}
             placeholder="Optional backup number"
-            className="mt-1.5 h-12"
+            className={neutralInputClass}
             data-testid="alternative-phone-input"
           />
         </div>
@@ -291,7 +400,9 @@ function StepPersonalInfo({ formData, updateField }) {
   );
 }
 
-function StepDeliveryAddress({ formData, updateField }) {
+function StepDeliveryAddress({ formData, updateField, errors }) {
+  const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div>
@@ -301,23 +412,69 @@ function StepDeliveryAddress({ formData, updateField }) {
         <p className="text-sm text-zinc-500">Where should we deliver your order?</p>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-4 form-question-stack">
         <div>
-          <Label htmlFor="address" className="text-zinc-700">Full Delivery Address *</Label>
-          <textarea
+          <Label htmlFor="state" className={questionLabelClass}>State *</Label>
+          <Popover open={isStatePopoverOpen} onOpenChange={setIsStatePopoverOpen}>
+            <PopoverTrigger asChild>
+              <button
+                id="state"
+                type="button"
+                role="combobox"
+                aria-expanded={isStatePopoverOpen}
+                className={`${neutralStateComboboxTriggerClass} ${formData.state ? "" : "text-zinc-500"} ${errors.state ? "border-red-400 focus-visible:ring-red-100" : ""}`}
+                data-testid="state-select"
+              >
+                <span className="truncate">{formData.state || "Search and select your state"}</span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </button>
+            </PopoverTrigger>
+
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search state..." data-testid="state-search-input" />
+                <CommandList>
+                  <CommandEmpty>No state found.</CommandEmpty>
+                  <CommandGroup>
+                    {NIGERIAN_STATES.map((state) => (
+                      <CommandItem
+                        key={state}
+                        value={state}
+                        onSelect={() => {
+                          updateField("state", state);
+                          setIsStatePopoverOpen(false);
+                        }}
+                        data-testid={`state-option-${state.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        <Check className={`mr-2 h-4 w-4 ${formData.state === state ? "opacity-100" : "opacity-0"}`} />
+                        {state}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <FieldError message={errors.state} />
+        </div>
+
+        <div>
+          <Label htmlFor="address" className={questionLabelClass}>Full Delivery Address *</Label>
+          <Textarea
             id="address"
             name="address"
             aria-label="Full Delivery Address"
             value={formData.address}
             onChange={(e) => updateField("address", e.target.value)}
             placeholder="Enter your complete delivery address"
-            className="mt-1.5 w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className={`${neutralTextAreaClass} ${errors.address ? "border-red-400 focus-visible:ring-red-100" : ""}`}
             data-testid="address-input"
           />
+          <FieldError message={errors.address} />
         </div>
         
         <div>
-          <Label htmlFor="landmark" className="text-zinc-700">Nearest Landmark *</Label>
+          <Label htmlFor="landmark" className={questionLabelClass}>Nearest Landmark *</Label>
           <Input
             id="landmark"
             name="landmark"
@@ -325,16 +482,17 @@ function StepDeliveryAddress({ formData, updateField }) {
             value={formData.landmark}
             onChange={(e) => updateField("landmark", e.target.value)}
             placeholder="E.g., Near GTBank, Opposite City Mall"
-            className="mt-1.5 h-12"
+            className={`${neutralInputClass} ${errors.landmark ? "border-red-400 focus-visible:ring-red-100" : ""}`}
             data-testid="landmark-input"
           />
+          <FieldError message={errors.landmark} />
         </div>
       </div>
     </div>
   );
 }
 
-function StepOrderDetails({ formData, updateField }) {
+function StepOrderDetails({ formData, updateField, errors }) {
   return (
     <div className="space-y-6">
       <div>
@@ -344,56 +502,32 @@ function StepOrderDetails({ formData, updateField }) {
         <p className="text-sm text-zinc-500">Tell us about the shoes you want</p>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-4 form-question-stack">
         <div>
-          <Label htmlFor="shoe_model" className="text-zinc-700">Shoe Model *</Label>
-          <Input
-            id="shoe_model"
-            name="shoe_model"
-            aria-label="Shoe Model"
-            value={formData.shoe_model}
-            onChange={(e) => updateField("shoe_model", e.target.value)}
-            placeholder="E.g., Nike Air Max, Adidas Superstar"
-            className="mt-1.5 h-12"
-            data-testid="shoe-model-input"
-          />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="shoe_size" className="text-zinc-700">Size *</Label>
-            <Input
+          <Label htmlFor="shoe_size" className={questionLabelClass}>Size *</Label>
+          <Select value={formData.shoe_size} onValueChange={(val) => updateField("shoe_size", val)}>
+            <SelectTrigger
               id="shoe_size"
-              name="shoe_size"
               aria-label="Shoe Size"
-              value={formData.shoe_size}
-              onChange={(e) => updateField("shoe_size", e.target.value)}
-              placeholder="E.g., 42, US 9"
-              className="mt-1.5 h-12"
               data-testid="shoe-size-input"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="shoe_color" className="text-zinc-700">Color *</Label>
-            <Input
-              id="shoe_color"
-              name="shoe_color"
-              aria-label="Shoe Color"
-              value={formData.shoe_color}
-              onChange={(e) => updateField("shoe_color", e.target.value)}
-              placeholder="E.g., Black, White"
-              className="mt-1.5 h-12"
-              data-testid="shoe-color-input"
-            />
-          </div>
+              className={`mt-1.5 h-12 rounded-lg border-zinc-300 bg-white text-zinc-900 ${errors.shoe_size ? "border-red-400 focus:ring-red-100" : ""}`}
+            >
+              <SelectValue placeholder="Select a size" />
+            </SelectTrigger>
+            <SelectContent>
+              {[40, 41, 42, 43, 44, 45, 46].map((size) => (
+                <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldError message={errors.shoe_size} />
         </div>
       </div>
     </div>
   );
 }
 
-function StepShoppingProfile({ formData, updateField }) {
+function StepShoppingProfile({ formData, updateField, errors }) {
   return (
     <div className="space-y-6">
       <div>
@@ -403,9 +537,9 @@ function StepShoppingProfile({ formData, updateField }) {
         <p className="text-sm text-zinc-500">Help us understand your shopping habits</p>
       </div>
       
-      <div className="space-y-6">
-        <div>
-          <Label className="text-zinc-700 mb-3 block">Who are you buying for? *</Label>
+      <div className="rounded-xl border border-zinc-200 overflow-hidden form-question-stack">
+        <div className="p-5 bg-white">
+          <Label className={questionPromptClass}>Who are you buying for? *</Label>
           <RadioGroup
             value={formData.buying_for}
             onValueChange={(value) => updateField("buying_for", value)}
@@ -416,8 +550,8 @@ function StepShoppingProfile({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.buying_for === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                    : "border-zinc-200 bg-zinc-50 hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`buying_for_${option}`} data-testid={`buying-for-${option.toLowerCase().replace(/\//g, '-')}`} />
@@ -425,10 +559,11 @@ function StepShoppingProfile({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.buying_for} />
         </div>
-        
-        <div>
-          <Label className="text-zinc-700 mb-3 block">How often do you shop online? *</Label>
+
+        <div className="p-5 bg-zinc-50 border-t border-zinc-200">
+          <Label className={questionPromptClass}>How often do you shop online? *</Label>
           <RadioGroup
             value={formData.shopping_frequency}
             onValueChange={(value) => updateField("shopping_frequency", value)}
@@ -439,8 +574,8 @@ function StepShoppingProfile({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.shopping_frequency === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-white shadow-sm"
+                    : "border-zinc-200 bg-white hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`shopping_frequency_${option}`} data-testid={`shopping-frequency-${option.toLowerCase().replace(/ /g, '-')}`} />
@@ -448,10 +583,11 @@ function StepShoppingProfile({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.shopping_frequency} />
         </div>
-        
-        <div>
-          <Label className="text-zinc-700 mb-3 block">Have you bought shoes online before? *</Label>
+
+        <div className="p-5 bg-white border-t border-zinc-200">
+          <Label className={questionPromptClass}>Have you bought shoes online before? *</Label>
           <RadioGroup
             value={formData.bought_shoes_online}
             onValueChange={(value) => updateField("bought_shoes_online", value)}
@@ -462,8 +598,8 @@ function StepShoppingProfile({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.bought_shoes_online === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                    : "border-zinc-200 bg-zinc-50 hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`bought_shoes_online_${option}`} data-testid={`bought-shoes-online-${option.toLowerCase()}`} />
@@ -471,13 +607,14 @@ function StepShoppingProfile({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.bought_shoes_online} />
         </div>
       </div>
     </div>
   );
 }
 
-function StepPaymentPreferences({ formData, updateField }) {
+function StepPaymentPreferences({ formData, updateField, errors }) {
   return (
     <div className="space-y-6">
       <div>
@@ -487,9 +624,9 @@ function StepPaymentPreferences({ formData, updateField }) {
         <p className="text-sm text-zinc-500">Final step - tell us about your payment preferences</p>
       </div>
       
-      <div className="space-y-6">
-        <div>
-          <Label className="text-zinc-700 mb-3 block">When buying shoes online, which describes you best? *</Label>
+      <div className="rounded-xl border border-zinc-200 overflow-hidden form-question-stack">
+        <div className="p-5 bg-white">
+          <Label className={questionPromptClass}>When buying shoes online, which describes you best? *</Label>
           <RadioGroup
             value={formData.buying_behavior}
             onValueChange={(value) => updateField("buying_behavior", value)}
@@ -500,8 +637,8 @@ function StepPaymentPreferences({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.buying_behavior === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                    : "border-zinc-200 bg-zinc-50 hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`buying_behavior_${option}`} data-testid={`buying-behavior-${option.substring(0, 20).toLowerCase().replace(/ /g, '-')}`} />
@@ -509,10 +646,11 @@ function StepPaymentPreferences({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.buying_behavior} />
         </div>
-        
-        <div>
-          <Label className="text-zinc-700 mb-3 block">When the shoes arrive, how do you plan to pay? *</Label>
+
+        <div className="p-5 bg-zinc-50 border-t border-zinc-200">
+          <Label className={questionPromptClass}>When the shoes arrive, how do you plan to pay? *</Label>
           <RadioGroup
             value={formData.payment_readiness}
             onValueChange={(value) => updateField("payment_readiness", value)}
@@ -523,8 +661,8 @@ function StepPaymentPreferences({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.payment_readiness === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-white shadow-sm"
+                    : "border-zinc-200 bg-white hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`payment_readiness_${option}`} data-testid={`payment-readiness-${option.substring(0, 15).toLowerCase().replace(/ /g, '-')}`} />
@@ -532,10 +670,11 @@ function StepPaymentPreferences({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.payment_readiness} />
         </div>
-        
-        <div>
-          <Label className="text-zinc-700 mb-3 block">Will you personally be available to receive the package? *</Label>
+
+        <div className="p-5 bg-white border-t border-zinc-200">
+          <Label className={questionPromptClass}>Will you personally be available to receive the package? *</Label>
           <RadioGroup
             value={formData.delivery_availability}
             onValueChange={(value) => updateField("delivery_availability", value)}
@@ -546,8 +685,8 @@ function StepPaymentPreferences({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.delivery_availability === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-zinc-50 shadow-sm"
+                    : "border-zinc-200 bg-zinc-50 hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`delivery_availability_${option}`} data-testid={`delivery-availability-${option.substring(0, 10).toLowerCase().replace(/ /g, '-')}`} />
@@ -555,10 +694,11 @@ function StepPaymentPreferences({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.delivery_availability} />
         </div>
-        
-        <div>
-          <Label className="text-zinc-700 mb-3 block">Commitment fee preference *</Label>
+
+        <div className="p-5 bg-zinc-50 border-t border-zinc-200">
+          <Label className={questionPromptClass}>Commitment fee preference *</Label>
           <RadioGroup
             value={formData.commitment_preference}
             onValueChange={(value) => updateField("commitment_preference", value)}
@@ -569,8 +709,8 @@ function StepPaymentPreferences({ formData, updateField }) {
                 key={option}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.commitment_preference === option
-                    ? "border-zinc-900 bg-zinc-50"
-                    : "border-zinc-200 hover:border-zinc-300"
+                    ? "border-zinc-900 bg-white shadow-sm"
+                    : "border-zinc-200 bg-white hover:border-zinc-400"
                 }`}
               >
                 <RadioGroupItem value={option} id={`commitment_preference_${option}`} data-testid={`commitment-${option.substring(0, 15).toLowerCase().replace(/ /g, '-')}`} />
@@ -578,21 +718,22 @@ function StepPaymentPreferences({ formData, updateField }) {
               </label>
             ))}
           </RadioGroup>
+          <FieldError message={errors.commitment_preference} />
         </div>
-        
-        {/* Confirmation */}
-        <div className="pt-4 border-t border-zinc-100">
+
+        <div className="p-5 bg-white border-t border-zinc-200">
           <label className="flex items-start gap-3 cursor-pointer">
             <Checkbox
               checked={formData.confirmation}
               onCheckedChange={(checked) => updateField("confirmation", checked)}
-              className="mt-0.5"
+              className={`mt-0.5 ${errors.confirmation ? "border-red-500" : ""}`}
               data-testid="confirmation-checkbox"
             />
-            <span className="text-sm text-zinc-700 leading-relaxed">
+            <span className="text-sm font-semibold text-zinc-800 leading-relaxed">
               I confirm that I will receive and pay for my Smart Stores order when it arrives. *
             </span>
           </label>
+          <FieldError message={errors.confirmation} />
         </div>
       </div>
     </div>
