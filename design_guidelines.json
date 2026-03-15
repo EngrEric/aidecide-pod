@@ -1,0 +1,176 @@
+{
+  "theme_strategy": {
+    "name": "Smart Stores - Minimalist Luxury",
+    "description": "A premium, internal-tool aesthetic that balances e-commerce elegance with administrative clarity. Think 'High-End Retail Backend'.",
+    "mode": "light",
+    "emotional_archetype": "The Performance Pro (Retail Variant)",
+    "principles": [
+      "Content is King: Data and forms take center stage; UI is the frame.",
+      "Tactile Minimalism: Use subtle textures (noise/grain) over flat colors to feel expensive.",
+      "High Contrast Hierarchy: Black text on white/off-white. No wash-out grays.",
+      "Mobile-First Frictionless: The customer form must feel like an app, not a web page."
+    ]
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "Public Sans, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+      "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+      "h3": "text-2xl font-medium",
+      "body": "text-base leading-relaxed text-zinc-600",
+      "small": "text-sm text-zinc-500",
+      "label": "text-xs font-medium uppercase tracking-wider text-zinc-400"
+    },
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap');"
+    ]
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#18181B",
+        "foreground": "#FAFAFA",
+        "hover": "#27272A",
+        "description": "Obsidian - Used for primary actions, active states, and headings."
+      },
+      "secondary": {
+        "DEFAULT": "#F4F4F5",
+        "foreground": "#18181B",
+        "hover": "#E4E4E7",
+        "description": "Vapor - Used for secondary buttons, backgrounds, and subtle borders."
+      },
+      "accent": {
+        "DEFAULT": "#A16207",
+        "foreground": "#FFFFFF",
+        "light": "#FEFCE8",
+        "description": "Deep Bronze - Used sparingly for 'Gold' status, highlights, or premium indicators."
+      },
+      "background": {
+        "app": "#FAFAFA",
+        "card": "#FFFFFF",
+        "overlay": "rgba(255, 255, 255, 0.8)"
+      },
+      "status": {
+        "success": "#15803D",
+        "warning": "#B45309",
+        "error": "#B91C1C",
+        "info": "#0F172A"
+      },
+      "border": "#E4E4E7"
+    },
+    "gradients": {
+      "subtle_gloss": "linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%)",
+      "mesh_overlay": "radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%)"
+    }
+  },
+  "layout": {
+    "spacing": {
+      "container_padding": "p-6 md:p-12",
+      "section_gap": "gap-8 md:gap-16",
+      "card_padding": "p-6 md:p-8"
+    },
+    "grid_system": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "form_step": "flex flex-col gap-6 max-w-md mx-auto"
+    },
+    "border_radius": {
+      "card": "rounded-xl",
+      "button": "rounded-lg",
+      "input": "rounded-md"
+    },
+    "z_index": {
+      "modal": 50,
+      "header": 40,
+      "dropdown": 30
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all duration-200 active:scale-95",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-transparent hover:border-border transition-all duration-200",
+      "ghost": "hover:bg-accent/10 hover:text-accent transition-colors duration-200",
+      "destructive": "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
+    },
+    "inputs": {
+      "base": "flex h-12 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+      "floating_label": "peer block w-full appearance-none border-0 border-b-2 border-gray-300 bg-transparent px-0 py-2.5 text-sm text-gray-900 focus:border-black focus:outline-none focus:ring-0"
+    },
+    "cards": {
+      "dashboard_stat": "bg-card text-card-foreground shadow-sm border border-border/50 hover:shadow-md transition-shadow duration-200 p-6 rounded-xl",
+      "form_container": "bg-white shadow-xl shadow-zinc-200/50 rounded-2xl border border-zinc-100 overflow-hidden relative"
+    },
+    "badges": {
+      "success": "bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 text-xs font-medium rounded-full",
+      "warning": "bg-yellow-50 text-yellow-700 border border-yellow-200 px-2 py-0.5 text-xs font-medium rounded-full",
+      "neutral": "bg-zinc-100 text-zinc-600 border border-zinc-200 px-2 py-0.5 text-xs font-medium rounded-full"
+    },
+    "navigation": {
+      "sidebar": "h-screen w-64 bg-zinc-900 text-zinc-400 p-4 hidden md:flex flex-col border-r border-zinc-800",
+      "topbar": "h-16 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "soft": "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
+      "sharp": "4px 4px 0px 0px rgba(0,0,0,1)",
+      "glow": "0 0 15px rgba(161, 98, 7, 0.3)"
+    },
+    "textures": {
+      "noise": "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E\")"
+    },
+    "animations": {
+      "fade_in": "animate-in fade-in duration-500",
+      "slide_up": "animate-in slide-in-from-bottom-4 duration-500",
+      "hover_lift": "hover:-translate-y-1 transition-transform duration-200"
+    }
+  },
+  "image_urls": {
+    "hero_product": {
+      "url": "https://images.unsplash.com/photo-1642957464439-7c653ed1328c?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "alt": "Minimalist white sneaker on table",
+      "usage": "Use in the hero section of the Customer Form or as a side visual for desktop login."
+    },
+    "background_texture": {
+      "url": "https://images.unsplash.com/photo-1751218434201-f58323a058f6?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "alt": "Abstract white sleek texture",
+      "usage": "Use as a subtle background for the Admin Dashboard or Auth pages."
+    },
+    "high_contrast_product": {
+      "url": "https://images.unsplash.com/photo-1656230259229-aa2634e3352c?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "alt": "White shoe on black background",
+      "usage": "Use for the 'POD Approved' success state or premium modals."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Do not use gradients for main buttons. Use solid Primary color (#18181B).",
+    "Ensure all input fields have `id`, `name`, and `aria-label` for accessibility.",
+    "The admin dashboard table must use 'Table' component from Shadcn/UI but styled with the 'badges' guidelines.",
+    "The Customer Form is a multi-step wizard. Use a state manager to handle steps. Add a progress indicator (dots or line) at the top.",
+    "Hardcode the admin login credentials in the frontend for this MVP (e.g., admin/smartstores).",
+    "Use 'sonner' for all toast notifications (Success/Error).",
+    "Add `data-testid` to all interactive elements."
+  ],
+  "universal_guidelines": [
+    "You tend to converge toward generic, 'on distribution' outputs. In frontend design, this creates what users call the 'AI slop' aesthetic. Avoid this: make creative, distinctive frontends that surprise and delight.",
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "You MUST NOT apply universal transition. Eg: `transition: all`. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
+    "You MUST NOT center align the app container, ie do not add `.App { text-align: center; }` in the css file. This disrupts the human natural reading flow of text",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use `sonner` for toasts. Sonner component are located in `/app/src/components/ui/sonner.tsx`"
+  ]
+}
