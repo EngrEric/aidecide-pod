@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "sonner";
 import { Check, ChevronLeft, ChevronRight, Package, Loader2, ChevronsUpDown } from "lucide-react";
+import { City, State } from "country-state-city";
 import { firebaseApi } from "@/lib/firebaseApi";
 import { QUESTION_OPTIONS } from "@/utils/scoring";
 
@@ -22,44 +23,25 @@ const STEPS = [
   { id: 5, title: "Payment Preferences", fields: ["buying_behavior", "payment_readiness", "delivery_availability", "commitment_preference", "confirmation"] }
 ];
 
-const NIGERIAN_STATES = [
-  "Abia",
-  "Adamawa",
-  "Akwa Ibom",
-  "Anambra",
-  "Bauchi",
-  "Bayelsa",
-  "Benue",
-  "Borno",
-  "Cross River",
-  "Delta",
-  "Ebonyi",
-  "Edo",
-  "Ekiti",
-  "Enugu",
-  "Gombe",
-  "Imo",
-  "Jigawa",
-  "Kaduna",
-  "Kano",
-  "Katsina",
-  "Kebbi",
-  "Kogi",
-  "Kwara",
-  "Lagos",
-  "Nasarawa",
-  "Niger",
-  "Ogun",
-  "Ondo",
-  "Osun",
-  "Oyo",
-  "Plateau",
-  "Rivers",
-  "Sokoto",
-  "Taraba",
-  "Yobe",
-  "Zamfara"
-];
+const NIGERIA_COUNTRY_CODE = "NG";
+
+const NIGERIAN_STATES = State
+  .getStatesOfCountry(NIGERIA_COUNTRY_CODE)
+  .map((state) => ({ name: state.name, isoCode: state.isoCode }))
+  .sort((a, b) => a.name.localeCompare(b.name));
+
+const NIGERIAN_LOCATIONS = [
+  ...NIGERIAN_STATES.map((state) => ({
+    value: state.name,
+    label: `${state.name} (State)`
+  })),
+  ...NIGERIAN_STATES.flatMap((state) =>
+    City.getCitiesOfState(NIGERIA_COUNTRY_CODE, state.isoCode).map((city) => ({
+      value: `${city.name}, ${state.name}`,
+      label: `${city.name}, ${state.name}`
+    }))
+  )
+].sort((a, b) => a.label.localeCompare(b.label));
 
 const initialFormData = {
   full_name: "",
@@ -82,7 +64,7 @@ const initialFormData = {
 const REQUIRED_FIELD_ERRORS = {
   full_name: "Full name is required.",
   active_phone: "Active phone number is required.",
-  state: "Please select your state.",
+  state: "Please select your state or city.",
   address: "Delivery address is required.",
   landmark: "Nearest landmark is required.",
   shoe_size: "Shoe size is required.",
@@ -414,7 +396,7 @@ function StepDeliveryAddress({ formData, updateField, errors }) {
       
       <div className="space-y-4 form-question-stack">
         <div>
-          <Label htmlFor="state" className={questionLabelClass}>State *</Label>
+          <Label htmlFor="state" className={questionLabelClass}>State / City *</Label>
           <Popover open={isStatePopoverOpen} onOpenChange={setIsStatePopoverOpen}>
             <PopoverTrigger asChild>
               <button
@@ -425,29 +407,29 @@ function StepDeliveryAddress({ formData, updateField, errors }) {
                 className={`${neutralStateComboboxTriggerClass} ${formData.state ? "" : "text-zinc-500"} ${errors.state ? "border-red-400 focus-visible:ring-red-100" : ""}`}
                 data-testid="state-select"
               >
-                <span className="truncate">{formData.state || "Search and select your state"}</span>
+                <span className="truncate">{formData.state || "Search and select your state or city"}</span>
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </button>
             </PopoverTrigger>
 
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
               <Command>
-                <CommandInput placeholder="Search state..." data-testid="state-search-input" />
+                <CommandInput placeholder="Search state or city..." data-testid="state-search-input" />
                 <CommandList>
-                  <CommandEmpty>No state found.</CommandEmpty>
+                  <CommandEmpty>No state or city found.</CommandEmpty>
                   <CommandGroup>
-                    {NIGERIAN_STATES.map((state) => (
+                    {NIGERIAN_LOCATIONS.map((location, index) => (
                       <CommandItem
-                        key={state}
-                        value={state}
+                        key={`${location.value}-${index}`}
+                        value={location.label}
                         onSelect={() => {
-                          updateField("state", state);
+                          updateField("state", location.value);
                           setIsStatePopoverOpen(false);
                         }}
-                        data-testid={`state-option-${state.toLowerCase().replace(/\s+/g, "-")}`}
+                        data-testid={`state-option-${location.value.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
                       >
-                        <Check className={`mr-2 h-4 w-4 ${formData.state === state ? "opacity-100" : "opacity-0"}`} />
-                        {state}
+                        <Check className={`mr-2 h-4 w-4 ${formData.state === location.value ? "opacity-100" : "opacity-0"}`} />
+                        {location.label}
                       </CommandItem>
                     ))}
                   </CommandGroup>
